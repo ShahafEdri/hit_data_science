@@ -1,34 +1,29 @@
+import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.datasets import load_iris
-from sklearn.model_selection import train_test_split
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import accuracy_score
-import matplotlib
-matplotlib.use('TkAgg')  # set the backend
+from sklearn import neighbors, datasets
 
+# Load the iris dataset
+iris = datasets.load_iris()
+X = iris.data[:, :2]  # we only take the first two features
+y = iris.target
 
-# Load the dataset
-iris = load_iris()
+# Fit the KNN model
+n_neighbors = 15
+clf = neighbors.KNeighborsClassifier(n_neighbors, weights='distance')
+clf.fit(X, y)
 
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(iris.data, iris.target, test_size=0.3, random_state=42)
+# Plot the decision boundary
+x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
+y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
+xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.1),
+                     np.arange(y_min, y_max, 0.1))
+Z = clf.predict(np.c_[xx.ravel(), yy.ravel()])
+Z = Z.reshape(xx.shape)
+plt.contourf(xx, yy, Z, cmap=plt.cm.RdBu)
 
-# Create an instance of the KNN model
-knn = KNeighborsClassifier(n_neighbors=3)
-
-# Fit the model on the training data
-knn.fit(X_train, y_train)
-
-# Make predictions on the testing data
-y_pred = knn.predict(X_test)
-
-# Calculate the accuracy of the model
-accuracy = accuracy_score(y_test, y_pred)
-print("Accuracy:", accuracy)
-
-# Plot the true and predicted labels
-plt.scatter(range(len(y_test)), y_test, label='True Labels')
-plt.scatter(range(len(y_pred)), y_pred, label='Predicted Labels')
-plt.title('True and Predicted Labels')
-plt.legend()
+# Plot the training points
+plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.RdBu, edgecolor='black')
+plt.xlabel('Sepal length')
+plt.ylabel('Sepal width')
+plt.title('KNN Classification')
 plt.show()
